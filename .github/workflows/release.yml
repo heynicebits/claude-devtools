@@ -7,7 +7,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  package:
+  package-mac:
     runs-on: macos-latest
 
     steps:
@@ -31,7 +31,7 @@ jobs:
 
       - name: Package macOS
         env:
-          CSC_LINK: ${{ secrets.CSC_LINK }}
+          CSC_LINK: ${{ secrets.MAC_CERTS }}
           CSC_KEY_PASSWORD: ${{ secrets.CSC_KEY_PASSWORD }}
           APPLE_ID: ${{ secrets.APPLE_ID }}
           APPLE_APP_SPECIFIC_PASSWORD: ${{ secrets.APPLE_APP_SPECIFIC_PASSWORD }}
@@ -42,5 +42,37 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: release-macos
+          path: release/**
+          if-no-files-found: error
+
+  package-win:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --no-frozen-lockfile
+
+      - name: Build app
+        run: pnpm build
+
+      - name: Package Windows
+        run: pnpm dist:win
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-windows
           path: release/**
           if-no-files-found: error
