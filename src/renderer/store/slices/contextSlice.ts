@@ -14,6 +14,7 @@ import type { ContextSnapshot } from '@renderer/services/contextStorage';
 import type { DetectedError, Project, RepositoryGroup } from '@renderer/types/data';
 import type { Pane } from '@renderer/types/panes';
 import type { Tab } from '@renderer/types/tabs';
+import type { ContextInfo } from '@shared/types/api';
 import type { StateCreator } from 'zustand';
 
 // =============================================================================
@@ -26,10 +27,12 @@ export interface ContextSlice {
   isContextSwitching: boolean; // true during switch transition
   targetContextId: string | null; // context being switched to
   contextSnapshotsReady: boolean; // true after initial IndexedDB check
+  availableContexts: ContextInfo[]; // list of all available contexts (local + SSH)
 
   // Actions
   switchContext: (targetContextId: string) => Promise<void>;
   initializeContextSystem: () => Promise<void>;
+  fetchAvailableContexts: () => Promise<void>;
 }
 
 // =============================================================================
@@ -227,6 +230,7 @@ export const createContextSlice: StateCreator<AppState, [], [], ContextSlice> = 
   isContextSwitching: false,
   targetContextId: null,
   contextSnapshotsReady: false,
+  availableContexts: [{ id: 'local', type: 'local' as const }],
 
   // Initialize context system (called once on app mount)
   initializeContextSystem: async () => {
@@ -245,9 +249,24 @@ export const createContextSlice: StateCreator<AppState, [], [], ContextSlice> = 
         contextSnapshotsReady: true,
         activeContextId,
       });
+
+      // Fetch available contexts
+      await get().fetchAvailableContexts();
     } catch (error) {
       console.error('[contextSlice] Failed to initialize context system:', error);
       set({ contextSnapshotsReady: true }); // Continue anyway
+    }
+  },
+
+  // Fetch list of available contexts (local + SSH)
+  fetchAvailableContexts: async () => {
+    try {
+      const result = await window.electronAPI.context.list();
+      set({ availableContexts: result });
+    } catch (error) {
+      console.error('[contextSlice] Failed to fetch available contexts:', error);
+      // Fallback to local-only
+      set({ availableContexts: [{ id: 'local', type: 'local' }] });
     }
   },
 
