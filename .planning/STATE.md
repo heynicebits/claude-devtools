@@ -10,29 +10,29 @@ See: .planning/PROJECT.md (updated 2026-02-12)
 ## Current Position
 
 Phase: 2 of 4 (Service Infrastructure)
-Plan: 1 of 3
-Status: Plan 02-01 complete
-Last activity: 2026-02-12 - Completed 02-01 (ServiceContext infrastructure)
+Plan: 2 of 3
+Status: Plan 02-02 complete
+Last activity: 2026-02-12 - Completed 02-02 (Registry integration)
 
-Progress: [███░░░░░░░] 37.5% (1.5/4 phases)
+Progress: [████░░░░░░] 50.0% (2.0/4 phases)
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 2
-- Average duration: 4 min
-- Total execution time: 0.13 hours
+- Total plans completed: 3
+- Average duration: 5 min
+- Total execution time: 0.23 hours
 
 **By Phase:**
 
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
 | 01 Provider Plumbing | 1 | 4 min | 4 min |
-| 02 Service Infrastructure | 1 | 4 min | 4 min |
+| 02 Service Infrastructure | 2 | 10 min | 5 min |
 
 **Recent Trend:**
-- Last 5 plans: 4, 4
-- Trend: Consistent velocity
+- Last 5 plans: 4, 4, 6
+- Trend: Slight increase (registry integration more complex)
 
 *Updated after each plan completion*
 
@@ -53,6 +53,10 @@ Recent decisions affecting current work:
 - ServiceContext bundles all session-data services for single workspace isolation (02-01)
 - dispose() separate from stop() - stop pauses (reversible), dispose destroys (permanent) (02-01)
 - removeAllListeners() called LAST in dispose() to prevent events during cleanup (02-01)
+- File watcher event rewiring via exported onContextSwitched callback from index.ts (02-02)
+- SSH handler dynamically imports onContextSwitched to avoid circular dependencies (02-02)
+- Context ID for SSH uses simple format: ssh-{host} (02-02)
+- Destroy existing SSH context on reconnection to same host (02-02)
 
 ### Pending Todos
 
@@ -78,9 +82,9 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-02-12
-Stopped at: Completed 02-01 (ServiceContext and ServiceContextRegistry) — ready for 02-02
+Stopped at: Completed 02-02 (Registry integration) — ready for 02-03
 Resume file: None
 
 ---
 *Created: 2026-02-12*
-*Last updated: 2026-02-12 after completing 02-01-PLAN.md*
+*Last updated: 2026-02-12 after completing 02-02-PLAN.md*
