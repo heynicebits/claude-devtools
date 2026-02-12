@@ -1,8 +1,9 @@
 /**
- * ContextSwitcher - Workspace context dropdown in SidebarHeader.
+ * WorkspaceIndicator - Floating bottom-right pill badge for workspace switching.
  *
- * Displays active context (Local or SSH host) with connection status badge.
- * Dropdown lists all available contexts with click-to-switch functionality.
+ * Shows active workspace (Local or SSH host) with connection status badge.
+ * Clicking opens an upward dropdown to switch between available workspaces.
+ * Only renders when multiple contexts are available (hidden in local-only mode).
  */
 
 import { useEffect, useRef, useState } from 'react';
@@ -13,7 +14,7 @@ import { useShallow } from 'zustand/react/shallow';
 
 import { ConnectionStatusBadge } from './ConnectionStatusBadge';
 
-export const ContextSwitcher = (): React.JSX.Element => {
+export const WorkspaceIndicator = (): React.JSX.Element | null => {
   const { activeContextId, isContextSwitching, availableContexts, switchContext } = useStore(
     useShallow((s) => ({
       activeContextId: s.activeContextId,
@@ -48,25 +49,27 @@ export const ContextSwitcher = (): React.JSX.Element => {
     return () => document.removeEventListener('keydown', handleEscape);
   }, []);
 
-  // Get display label for context
+  // Only show when multiple contexts exist
+  if (availableContexts.length <= 1) return null;
+
   const getContextLabel = (contextId: string): string => {
-    if (contextId === 'local') {
-      return 'Local';
-    }
-    // Strip 'ssh-' prefix for display (e.g., 'ssh-192.168.1.10' -> '192.168.1.10')
+    if (contextId === 'local') return 'Local';
     return contextId.startsWith('ssh-') ? contextId.slice(4) : contextId;
   };
 
   const activeLabel = getContextLabel(activeContextId);
 
   return (
-    <div ref={dropdownRef} className="relative">
-      {/* Trigger button */}
+    <div ref={dropdownRef} className="fixed bottom-4 right-4 z-30">
+      {/* Trigger pill */}
       <button
         onClick={() => !isContextSwitching && setIsOpen(!isOpen)}
         disabled={isContextSwitching}
-        className={`flex items-center gap-1.5 rounded px-2 py-1 text-xs transition-opacity hover:opacity-80 ${isContextSwitching ? 'opacity-50' : ''}`}
-        style={{ WebkitAppRegion: 'no-drag' } as React.CSSProperties}
+        className={`flex items-center gap-2 rounded-full px-3 py-1.5 text-xs shadow-lg transition-opacity hover:opacity-90 ${isContextSwitching ? 'opacity-50' : ''}`}
+        style={{
+          backgroundColor: 'var(--color-surface-raised)',
+          border: '1px solid var(--color-border-emphasis)',
+        }}
       >
         <ConnectionStatusBadge contextId={activeContextId} />
         <span
@@ -81,19 +84,19 @@ export const ContextSwitcher = (): React.JSX.Element => {
         />
       </button>
 
-      {/* Dropdown panel */}
+      {/* Upward dropdown */}
       {isOpen && !isContextSwitching && (
         <>
-          {/* Backdrop overlay */}
+          {/* Backdrop */}
           <div
             role="presentation"
             className="fixed inset-0 z-10"
             onClick={() => setIsOpen(false)}
           />
 
-          {/* Dropdown content */}
+          {/* Dropdown content - opens upward */}
           <div
-            className="absolute inset-x-4 top-full z-20 mt-1 max-h-[250px] overflow-y-auto rounded-lg py-1 shadow-xl"
+            className="absolute bottom-full right-0 z-20 mb-2 max-h-[250px] w-56 overflow-y-auto rounded-lg py-1 shadow-xl"
             style={{
               backgroundColor: 'var(--color-surface-sidebar)',
               borderWidth: '1px',

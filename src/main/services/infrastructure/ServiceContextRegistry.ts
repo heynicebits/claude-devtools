@@ -18,7 +18,7 @@
 
 import { createLogger } from '@shared/utils/logger';
 
-import { ServiceContext } from './ServiceContext';
+import { type ServiceContext } from './ServiceContext';
 
 const logger = createLogger('Infrastructure:ServiceContextRegistry');
 
@@ -161,7 +161,7 @@ export class ServiceContextRegistry {
    * Lists all registered contexts.
    * @returns Array of context metadata
    */
-  list(): Array<{ id: string; type: 'local' | 'ssh' }> {
+  list(): { id: string; type: 'local' | 'ssh' }[] {
     return Array.from(this.contexts.values()).map((context) => ({
       id: context.id,
       type: context.type,

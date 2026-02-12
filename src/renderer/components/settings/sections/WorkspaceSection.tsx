@@ -10,10 +10,10 @@
  * Profile changes persist via ConfigManager and trigger context list refresh.
  */
 
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
 import { useStore } from '@renderer/store';
-import { Edit2, Loader2, Plus, Save, Server, Trash2, X } from 'lucide-react';
+import { ChevronDown, Edit2, Loader2, Plus, Save, Server, Trash2, X } from 'lucide-react';
 
 import { SettingsSectionHeader } from '../components/SettingsSectionHeader';
 
@@ -26,6 +26,13 @@ const inputStyle = {
   color: 'var(--color-text)',
 };
 
+const authMethodOptions: { value: SshAuthMethod; label: string }[] = [
+  { value: 'auto', label: 'Auto (from SSH Config)' },
+  { value: 'agent', label: 'SSH Agent' },
+  { value: 'privateKey', label: 'Private Key' },
+  { value: 'password', label: 'Password' },
+];
+
 const defaultForm = {
   name: '',
   host: '',
@@ -33,6 +40,101 @@ const defaultForm = {
   username: '',
   authMethod: 'auto' as SshAuthMethod,
   privateKeyPath: '',
+};
+
+const AuthMethodSelect = ({
+  value,
+  onChange,
+}: {
+  value: SshAuthMethod;
+  onChange: (v: SshAuthMethod) => void;
+}): React.JSX.Element => {
+  const [isOpen, setIsOpen] = useState(false);
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!isOpen) return;
+    const handleClickOutside = (e: MouseEvent): void => {
+      if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
+        setIsOpen(false);
+      }
+    };
+    const handleEscape = (e: KeyboardEvent): void => {
+      if (e.key === 'Escape') setIsOpen(false);
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    document.addEventListener('keydown', handleEscape);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('keydown', handleEscape);
+    };
+  }, [isOpen]);
+
+  const selectedLabel = authMethodOptions.find((o) => o.value === value)?.label ?? value;
+
+  return (
+    <div>
+      <label className="mb-1 block text-xs" style={{ color: 'var(--color-text-muted)' }}>
+        Authentication
+      </label>
+      <div ref={containerRef} className="relative">
+        <button
+          type="button"
+          onClick={() => setIsOpen(!isOpen)}
+          className={inputClass}
+          style={{
+            ...inputStyle,
+            textAlign: 'left',
+            cursor: 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+          }}
+        >
+          <span>{selectedLabel}</span>
+          <ChevronDown
+            className={`size-3.5 transition-transform duration-150 ${isOpen ? 'rotate-180' : ''}`}
+            style={{ color: 'var(--color-text-muted)' }}
+          />
+        </button>
+        {isOpen && (
+          <div
+            className="absolute inset-x-0 top-full z-50 mt-1 overflow-hidden rounded-md border shadow-lg"
+            style={{
+              backgroundColor: 'var(--color-surface-overlay)',
+              borderColor: 'var(--color-border-emphasis)',
+            }}
+          >
+            {authMethodOptions.map((opt) => (
+              <button
+                key={opt.value}
+                type="button"
+                onClick={() => {
+                  onChange(opt.value);
+                  setIsOpen(false);
+                }}
+                className="flex w-full items-center px-3 py-2 text-left text-sm transition-colors"
+                style={{
+                  color: opt.value === value ? 'var(--color-text)' : 'var(--color-text-secondary)',
+                  backgroundColor:
+                    opt.value === value ? 'var(--color-surface-raised)' : 'transparent',
+                }}
+                onMouseEnter={(e) => {
+                  if (opt.value !== value)
+                    e.currentTarget.style.backgroundColor = 'var(--color-surface-raised)';
+                }}
+                onMouseLeave={(e) => {
+                  if (opt.value !== value) e.currentTarget.style.backgroundColor = 'transparent';
+                }}
+              >
+                {opt.label}
+              </button>
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
+  );
 };
 
 export const WorkspaceSection = (): React.JSX.Element => {
@@ -212,22 +314,7 @@ export const WorkspaceSection = (): React.JSX.Element => {
         </div>
       </div>
 
-      <div>
-        <label className="mb-1 block text-xs" style={{ color: 'var(--color-text-muted)' }}>
-          Authentication
-        </label>
-        <select
-          value={formAuthMethod}
-          onChange={(e) => setFormAuthMethod(e.target.value as SshAuthMethod)}
-          className="w-full rounded-md border px-3 py-1.5 text-sm"
-          style={inputStyle}
-        >
-          <option value="auto">Auto (from SSH Config)</option>
-          <option value="agent">SSH Agent</option>
-          <option value="privateKey">Private Key</option>
-          <option value="password">Password</option>
-        </select>
-      </div>
+      <AuthMethodSelect value={formAuthMethod} onChange={setFormAuthMethod} />
 
       {formAuthMethod === 'privateKey' && (
         <div>
@@ -243,6 +330,12 @@ export const WorkspaceSection = (): React.JSX.Element => {
             style={inputStyle}
           />
         </div>
+      )}
+
+      {formAuthMethod === 'password' && (
+        <p className="text-xs" style={{ color: 'var(--color-text-muted)' }}>
+          You will be prompted for the password when connecting.
+        </p>
       )}
 
       <div className="flex items-center gap-2 pt-1">

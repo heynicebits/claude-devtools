@@ -13,8 +13,8 @@
 
 import { ChunkBuilder } from '@main/services/analysis/ChunkBuilder';
 import { ProjectScanner } from '@main/services/discovery/ProjectScanner';
-import { SessionParser } from '@main/services/parsing/SessionParser';
 import { SubagentResolver } from '@main/services/discovery/SubagentResolver';
+import { SessionParser } from '@main/services/parsing/SessionParser';
 import {
   CACHE_CLEANUP_INTERVAL_MINUTES,
   CACHE_TTL_MINUTES,
