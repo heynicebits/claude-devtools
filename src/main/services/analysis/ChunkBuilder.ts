@@ -55,6 +55,7 @@ import { buildGroups as buildConversationGroups } from './ConversationGroupBuild
 import { buildSubagentDetail as buildSubagentDetailFn } from './SubagentDetailBuilder';
 
 import type { SubagentResolver } from '../discovery/SubagentResolver';
+import type { FileSystemProvider } from '../infrastructure/FileSystemProvider';
 import type { SessionParser } from '../parsing/SessionParser';
 
 export class ChunkBuilder {
@@ -428,7 +429,9 @@ export class ChunkBuilder {
     sessionId: string,
     subagentId: string,
     sessionParser: SessionParser,
-    subagentResolver: SubagentResolver
+    subagentResolver: SubagentResolver,
+    fsProvider: FileSystemProvider,
+    projectsDir: string
   ): Promise<SubagentDetail | null> {
     // Delegate to the extracted module, passing buildChunks as a callback
     return buildSubagentDetailFn(
@@ -437,7 +440,9 @@ export class ChunkBuilder {
       subagentId,
       sessionParser,
       subagentResolver,
-      (messages, subagents) => this.buildChunks(messages, subagents)
+      (messages, subagents) => this.buildChunks(messages, subagents),
+      fsProvider,
+      projectsDir
     );
   }
 }

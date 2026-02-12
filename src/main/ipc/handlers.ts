@@ -72,7 +72,7 @@ export function initializeIpcHandlers(
   initializeProjectHandlers(scanner);
   initializeSessionHandlers(scanner, parser, resolver, builder, cache);
   initializeSearchHandlers(scanner);
-  initializeSubagentHandlers(builder, cache, parser, resolver);
+  initializeSubagentHandlers(builder, cache, parser, resolver, scanner);
   initializeUpdaterHandlers(updater);
   if (sshManager && sshModeSwitchCallback) {
     initializeSshHandlers(sshManager, sshModeSwitchCallback);
@@ -110,7 +110,7 @@ export function reinitializeServiceHandlers(
   initializeProjectHandlers(scanner);
   initializeSessionHandlers(scanner, parser, resolver, builder, cache);
   initializeSearchHandlers(scanner);
-  initializeSubagentHandlers(builder, cache, parser, resolver);
+  initializeSubagentHandlers(builder, cache, parser, resolver, scanner);
   logger.info('Service handlers re-initialized after mode switch');
 }
 

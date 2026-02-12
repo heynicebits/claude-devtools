@@ -16,12 +16,14 @@ import {
 } from '@main/types';
 import { countTokens } from '@main/utils/tokenizer';
 import { createLogger } from '@shared/utils/logger';
+import * as path from 'path';
 
 const logger = createLogger('Service:SubagentDetailBuilder');
 
 import { buildSemanticStepGroups } from './SemanticStepGrouper';
 
 import type { SubagentResolver } from '../discovery/SubagentResolver';
+import type { FileSystemProvider } from '../infrastructure/FileSystemProvider';
 import type { SessionParser } from '../parsing/SessionParser';
 
 /**
@@ -34,6 +36,8 @@ import type { SessionParser } from '../parsing/SessionParser';
  * @param sessionParser - SessionParser instance for parsing subagent file
  * @param subagentResolver - SubagentResolver instance for nested subagents
  * @param buildChunksFn - Function to build chunks from messages and subagents
+ * @param fsProvider - FileSystemProvider for file existence checks
+ * @param projectsDir - Projects directory path
  * @returns SubagentDetail or null if not found
  */
 export async function buildSubagentDetail(
@@ -42,21 +46,21 @@ export async function buildSubagentDetail(
   subagentId: string,
   sessionParser: SessionParser,
   subagentResolver: SubagentResolver,
-  buildChunksFn: (messages: ParsedMessage[], subagents: Process[]) => EnhancedChunk[]
+  buildChunksFn: (messages: ParsedMessage[], subagents: Process[]) => EnhancedChunk[],
+  fsProvider: FileSystemProvider,
+  projectsDir: string
 ): Promise<SubagentDetail | null> {
   try {
-    const fs = await import('fs/promises');
-    const path = await import('path');
-    const os = await import('os');
-
     // Construct path to subagent JSONL file
-    const claudeDir = path.join(os.homedir(), '.claude', 'projects');
-    const subagentPath = path.join(claudeDir, projectId, 'subagents', `agent-${subagentId}.jsonl`);
+    const subagentPath = path.join(
+      projectsDir,
+      projectId,
+      'subagents',
+      `agent-${subagentId}.jsonl`
+    );
 
     // Check if file exists
-    try {
-      await fs.access(subagentPath);
-    } catch {
+    if (!(await fsProvider.exists(subagentPath))) {
       logger.warn(`Subagent file not found: ${subagentPath}`);
       return null;
     }

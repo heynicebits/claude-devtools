@@ -12,7 +12,13 @@ import { type SubagentDetail } from '../types';
 
 import { validateProjectId, validateSessionId, validateSubagentId } from './guards';
 
-import type { ChunkBuilder, DataCache, SessionParser, SubagentResolver } from '../services';
+import type {
+  ChunkBuilder,
+  DataCache,
+  ProjectScanner,
+  SessionParser,
+  SubagentResolver,
+} from '../services';
 
 const logger = createLogger('IPC:subagents');
 
@@ -21,6 +27,7 @@ let chunkBuilder: ChunkBuilder;
 let dataCache: DataCache;
 let sessionParser: SessionParser;
 let subagentResolver: SubagentResolver;
+let projectScanner: ProjectScanner;
 
 /**
  * Initializes subagent handlers with service instances.
@@ -29,12 +36,14 @@ export function initializeSubagentHandlers(
   builder: ChunkBuilder,
   cache: DataCache,
   parser: SessionParser,
-  resolver: SubagentResolver
+  resolver: SubagentResolver,
+  scanner: ProjectScanner
 ): void {
   chunkBuilder = builder;
   dataCache = cache;
   sessionParser = parser;
   subagentResolver = resolver;
+  projectScanner = scanner;
 }
 
 /**
@@ -97,13 +106,19 @@ async function handleGetSubagentDetail(
       return subagentDetail;
     }
 
+    // Get provider and projectsDir from projectScanner
+    const fsProvider = projectScanner.getFileSystemProvider();
+    const projectsDir = projectScanner.getProjectsDir();
+
     // Build subagent detail
     const builtDetail = await chunkBuilder.buildSubagentDetail(
       safeProjectId,
       safeSessionId,
       safeSubagentId,
       sessionParser,
-      subagentResolver
+      subagentResolver,
+      fsProvider,
+      projectsDir
     );
 
     if (!builtDetail) {
