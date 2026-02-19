@@ -451,12 +451,10 @@ function createWindow(): void {
     });
   }
 
-  // Set traffic light position + notify renderer on first load, and auto-check for updates
+  // Set traffic light position + notify renderer on first load
   mainWindow.webContents.on('did-finish-load', () => {
     if (mainWindow && !mainWindow.isDestroyed()) {
       syncTrafficLightPosition(mainWindow);
-      // Auto-check for updates 3 seconds after window loads
-      setTimeout(() => updaterService.checkForUpdates(), 3000);
     }
   });
 
