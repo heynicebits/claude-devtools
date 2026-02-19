@@ -21,11 +21,11 @@
     "dev": "electron-vite dev",
     "build": "electron-vite build",
     "dist": "electron-builder --mac --win --linux",
-    "dist:mac": "electron-builder --mac --publish always",
-    "dist:mac:arm64": "electron-builder --mac --arm64 --publish always",
-    "dist:mac:x64": "electron-builder --mac --x64 --publish always",
-    "dist:win": "electron-builder --win --publish always",
-    "dist:linux": "electron-builder --linux --publish always",
+    "dist:mac": "electron-builder --mac --publish never",
+    "dist:mac:arm64": "electron-builder --mac --arm64 --publish never",
+    "dist:mac:x64": "electron-builder --mac --x64 --publish never",
+    "dist:win": "electron-builder --win --publish never",
+    "dist:linux": "electron-builder --linux --publish never",
     "preview": "electron-vite preview",
     "typecheck": "tsc --noEmit",
     "lint": "eslint src/",
@@ -55,7 +55,6 @@
     "@fastify/static": "^9.0.0",
     "@tanstack/react-virtual": "^3.10.8",
     "date-fns": "^3.6.0",
-    "electron-updater": "^6.7.3",
     "fastify": "^5.7.4",
     "idb-keyval": "^6.2.2",
     "lucide-react": "^0.562.0",
@@ -139,7 +138,7 @@
       ],
       "hardenedRuntime": true,
       "gatekeeperAssess": false,
-      "notarize": true,
+      "notarize": false,
       "entitlements": "resources/entitlements.mac.plist",
       "entitlementsInherit": "resources/entitlements.mac.inherit.plist",
       "icon": "resources/icons/mac/icon.icns"
@@ -171,12 +170,7 @@
       "perMachine": false,
       "allowToChangeInstallationDirectory": true
     },
-    "publish": [
-      {
-        "provider": "github",
-        "releaseType": "draft"
-      }
-    ]
+    "publish": null
   },
   "packageManager": "pnpm@10.25.0+sha512.5e82639027af37cf832061bcc6d639c219634488e0f2baebe785028a793de7b525ffcd3f7ff574f5e9860654e098fe852ba8ac5dd5cefe1767d23a020a92f501"
 }
