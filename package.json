@@ -19,6 +19,7 @@
   "main": "dist-electron/main/index.cjs",
   "scripts": {
     "dev": "electron-vite dev",
+    "prebuild": "tsx scripts/fetch-pricing-data.ts",
     "build": "electron-vite build",
     "dist": "electron-builder --mac --win --linux",
     "dist:mac": "electron-builder --mac --publish never",
@@ -125,6 +126,12 @@
     "asar": true,
     "asarUnpack": [
       "out/renderer/**"
+    ],
+    "extraResources": [
+      {
+        "from": "resources/pricing.json",
+        "to": "pricing.json"
+      }
     ],
     "npmRebuild": false,
     "extraMetadata": {
