@@ -19,7 +19,6 @@ import type { ExportFormat } from '@renderer/utils/sessionExporter';
 interface MoreMenuProps {
   activeTab: Tab | undefined;
   activeTabSessionDetail: SessionDetail | null;
-  activeTabId: string | null;
 }
 
 interface MenuItem {
