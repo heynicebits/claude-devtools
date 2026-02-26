@@ -1,7 +1,7 @@
 /**
  * MoreMenu - Dropdown menu behind a "..." icon for less-frequent toolbar actions.
  *
- * Groups: Search, Export (session-only), Analyze (session-only), Settings.
+ * Groups: Search, Export (session-only), Settings.
  * Closes on outside click or Escape.
  */
 
@@ -10,7 +10,7 @@ import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useStore } from '@renderer/store';
 import { triggerDownload } from '@renderer/utils/sessionExporter';
 import { formatShortcut } from '@renderer/utils/stringUtils';
-import { Activity, Braces, FileText, MoreHorizontal, Search, Settings, Type } from 'lucide-react';
+import { Braces, FileText, MoreHorizontal, Search, Settings, Type } from 'lucide-react';
 
 import type { SessionDetail } from '@renderer/types/data';
 import type { Tab } from '@renderer/types/tabs';
@@ -42,7 +42,6 @@ export const MoreMenu = ({
 
   const openCommandPalette = useStore((s) => s.openCommandPalette);
   const openSettingsTab = useStore((s) => s.openSettingsTab);
-  const openSessionReport = useStore((s) => s.openSessionReport);
 
   // Close on outside click
   useEffect(() => {
@@ -120,15 +119,6 @@ export const MoreMenu = ({
           icon: Type,
           shortcut: '.txt',
           onClick: () => handleExport('plaintext'),
-        },
-        {
-          id: 'analyze',
-          label: 'Analyze Session',
-          icon: Activity,
-          onClick: () => {
-            if (activeTabId) openSessionReport(activeTabId);
-            setIsOpen(false);
-          },
         },
       ]
     : [];
