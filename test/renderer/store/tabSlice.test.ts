@@ -297,8 +297,9 @@ describe('tabSlice', () => {
       expect(store.getState().selectedWorktreeId).toBe('worktree-A');
 
       // Switch to tab B
-      const tabBId = store.getState().openTabs.find((t) => t.sessionId === 'session-B')?.id;
-      store.getState().setActiveTab(tabBId!);
+      const tabB = store.getState().openTabs.find((t) => t.sessionId === 'session-B');
+      expect(tabB).toBeDefined();
+      store.getState().setActiveTab(tabB!.id);
       expect(store.getState().selectedRepositoryId).toBe('repo-B');
       expect(store.getState().selectedWorktreeId).toBe('worktree-B');
     });
