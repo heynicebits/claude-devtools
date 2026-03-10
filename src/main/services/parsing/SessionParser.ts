@@ -98,8 +98,11 @@ export class SessionParser {
       switch (m.type) {
         case 'user':
           byType.user.push(m);
-          if (isParsedRealUserMessage(m)) byType.realUser.push(m);
-          if (isParsedInternalUserMessage(m)) byType.internalUser.push(m);
+          if (isParsedRealUserMessage(m)) {
+            byType.realUser.push(m);
+          } else if (isParsedInternalUserMessage(m)) {
+            byType.internalUser.push(m);
+          }
           break;
         case 'assistant':
           byType.assistant.push(m);
