@@ -127,6 +127,17 @@ describe('dateGrouping', () => {
       expect(result.Today).toHaveLength(1);
       expect(result.Older).toHaveLength(0);
     });
+
+    it('should not allow an older updatedAt to override a newer createdAt', () => {
+      const createdToday = new Date('2024-01-15T10:00:00Z'); // Today
+      const updatedOld = new Date('2024-01-01T10:00:00Z'); // Older
+      const sessions = [createSession('1', createdToday, updatedOld)];
+
+      const result = groupSessionsByDate(sessions);
+
+      expect(result.Today).toHaveLength(1);
+      expect(result.Older).toHaveLength(0);
+    });
   });
 
   describe('getNonEmptyCategories', () => {
