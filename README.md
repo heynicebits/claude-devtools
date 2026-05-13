@@ -121,8 +121,7 @@ Per-turn token attribution across 7 categories — **CLAUDE.md** (global, projec
 
 ### [Terminal-Friendly Copy & Paste](https://claude-dev.tools/docs/copy-paste)
 
-<!-- TODO: replace with uploaded GitHub asset URL for copy-paste.mp4 -->
-<video src="https://github.com/user-attachments/assets/COPY-PASTE-VIDEO-ID" controls="controls" muted="muted" style="max-width: 100%;"></video>
+<video src="https://github.com/user-attachments/assets/976dfc47-4d3c-4539-9be2-218037b3dc37" controls="controls" muted="muted" style="max-width: 100%;"></video>
 
 Copying Claude Code output from the terminal mangles it — selection wraps at the terminal width, ANSI color codes leak into the clipboard, and code blocks lose their Markdown formatting. claude-devtools renders every message, tool call, and output as **real selectable text** with **one-click copy** on every code block, plus full-session **export to Markdown / JSON / plain text**.
 
