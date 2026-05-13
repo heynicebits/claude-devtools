@@ -81,6 +81,7 @@ The only workaround is `--verbose`, which dumps raw JSON, internal system prompt
 | Collapsed subagent output | Full execution trees per agent with tool traces, tokens, duration, cost |
 | Nothing about thinking | Extended thinking content, fully visible |
 | `--verbose` JSON dump | Structured, filterable, navigable interface — no noise |
+| Per-project Claude memory hidden in `~/.claude/projects/.../memory/` | `MEMORY.md` rendered as a clickable index of layers; open any layer in your editor |
 
 **Zero configuration. No API keys. No wrappers. Works with every session you've ever run.**
 
@@ -132,6 +133,10 @@ System notifications for `.env` access, tool errors, high token usage, and custo
 ### [Tool Call Inspector](https://claude-dev.tools/docs/tool-calls)
 
 Every tool call expanded with specialized viewers — syntax-highlighted Read calls, inline Edit diffs, Bash output, and full subagent trees.
+
+### [Project Memory](https://claude-dev.tools/docs/memory)
+
+Claude Code stores per-project memory at `~/.claude/projects/<project>/memory/` — a `MEMORY.md` index plus one `.md` file per layer (working style, architecture notes, etc.). claude-devtools surfaces this as a sidebar entry that opens a dedicated pane: layer list on the left, full markdown rendering and in-pane search on the right, and an icon-driven "Open in…" launcher that hands any layer off to Finder/Explorer, Cursor, VS Code, Zed, Xcode, iTerm, Ghostty, Terminal — or copies the absolute path.
 
 ### [Team & Subagent Trees](https://claude-dev.tools/docs/subagents)
 
