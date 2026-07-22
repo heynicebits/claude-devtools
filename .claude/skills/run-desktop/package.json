@@ -1,0 +1,9 @@
+{
+  "name": "run-desktop-driver",
+  "private": true,
+  "type": "module",
+  "description": "Standalone deps for the claude-devtools Playwright REPL driver. Keeps playwright-core out of the app's own package.json.",
+  "dependencies": {
+    "playwright-core": "^1.49.0"
+  }
+}
