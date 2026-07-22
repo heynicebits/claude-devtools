@@ -19,6 +19,9 @@ Cross-process code used by main and renderer.
   - `modelParser.ts` - Model name/family parsing
   - `teammateMessageParser.ts` - `<teammate-message>` XML parsing
   - `markdownTextSearch.ts` - Markdown-aware text search
+  - `memoryIndex.ts` - MEMORY.md index parsing (`parseMemoryIndex`, `MemoryIndex`)
+  - `sessionDetailResponse.ts` - Session-detail fingerprint helper (`isSessionDetailUnchanged`)
+  - `sessionIdValidator.ts` - UUID / session-id fragment validation (`isUUID`, `isSessionIdFragment`)
   - `contentSanitizer.ts` - Content sanitization
   - `errorHandling.ts` - Error helpers
   - `logger.ts` - Logging utility

@@ -18,10 +18,6 @@ Always use pnpm (not npm/yarn) for this project.
 - `pnpm test:watch` - Watch mode
 - `pnpm test:coverage` - Coverage report
 - `pnpm test:coverage:critical` - Critical path coverage
-- `pnpm test:chunks` - Chunk building tests
-- `pnpm test:semantic` - Semantic step extraction tests
-- `pnpm test:noise` - Noise filtering tests
-- `pnpm test:task-filtering` - Task tool filtering tests
 
 ## Path Aliases
 Use path aliases for imports:
@@ -72,7 +68,7 @@ Tracks what consumes tokens in Claude's context window across 6 categories (disc
 | `mentioned-file` | `MentionedFileInjection` | User @-mentioned files |
 | `tool-output` | `ToolOutputInjection` | Tool execution results (Read, Bash, etc.) |
 | `thinking-text` | `ThinkingTextInjection` | Extended thinking + text output tokens |
-| `team-coordination` | `TeamCoordinationInjection` | Team tools (SendMessage, TaskCreate, etc.) |
+| `task-coordination` | `TaskCoordinationInjection` | Team tools (SendMessage, TaskCreate, etc.) |
 | `user-message` | `UserMessageInjection` | User prompt text per turn |
 
 - **Types**: `src/renderer/types/contextInjection.ts` — `ContextInjection` union, `ContextStats`, `TokensByCategory`
@@ -138,7 +134,7 @@ isClaudeMdInjection(inj)          // category: "claude-md"
 isMentionedFileInjection(inj)     // category: "mentioned-file"
 isToolOutputInjection(inj)        // category: "tool-output"
 isThinkingTextInjection(inj)      // category: "thinking-text"
-isTeamCoordinationInjection(inj)  // category: "team-coordination"
+isTaskCoordinationInjection(inj)  // category: "task-coordination"
 isUserMessageInjection(inj)       // category: "user-message"
 ```
 

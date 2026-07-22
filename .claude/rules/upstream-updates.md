@@ -65,9 +65,12 @@ pnpm build
 Our fork has these intentional divergences from upstream — preserve them during merges:
 - **`UpdaterService.ts`**: Gutted to a no-op stub. Do NOT restore auto-updater functionality.
 - **`package.json`**: `electron-updater` removed from dependencies. Do NOT re-add it.
+- **`package.json` `pnpm.overrides`**: security pins (lodash-es, brace-expansion, fast-uri, dompurify). Keep/refresh these; do NOT drop them.
+- **`package.json` `version`**: pinned to the real version (e.g. `0.5.0`). Upstream stamps version from the git tag in CI; our fork pins it so local builds show the real version in About. Keep the pin.
 - **`src/main/index.ts`**: Update menu items removed.
 - **`AUDIT-REPORT.md`**: Our file, not in upstream.
 - **`update-from-upstream.sh`**: Our file, not in upstream.
+- **`.claude/skills/run-desktop/`**: Our Playwright REPL driver skill, not in upstream.
 
 If upstream touches these files, resolve conflicts by keeping our security changes.
 

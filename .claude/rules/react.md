@@ -35,7 +35,8 @@ components/
 ├── chat/           # Chat display, items, viewers, SessionContextPanel
 ├── common/         # Shared components (badges, token display)
 ├── dashboard/      # Dashboard views
-├── layout/         # Layout components (headers, shells)
+├── layout/         # Layout components (headers, shells, panes, tabs)
+├── memory/         # Per-project memory viewer
 ├── notifications/  # Notification panels and badges
 ├── search/         # Search UI and results
 ├── settings/       # Settings pages and controls

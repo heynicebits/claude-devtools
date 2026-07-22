@@ -7,12 +7,13 @@ Secure bridge between main and renderer processes via Electron's contextBridge.
 - `constants/ipcChannels.ts` - IPC channel name constants
 
 ## ElectronAPI Organization
-Groups exposed methods by domain:
+Groups exposed methods by domain (full type: `@shared/types/ElectronAPI`):
 
 ### Session APIs
-- `getProjects()`, `getSessions()`, `getSessionsPaginated()`
-- `getSessionDetail()`, `getSessionMetrics()`, `getWaterfallData()`
-- `getSessionGroups()`, `searchSessions()`, `getAppVersion()`
+- `getProjects()`, `getSessions()`, `getSessionsPaginated()`, `getSessionsByIds()`
+- `getSessionDetail(projectId, sessionId, knownFingerprint?)` - returns `SessionDetailResponse`; short-circuits when the fingerprint is unchanged
+- `getSessionMetrics()`, `getWaterfallData()`, `getSessionGroups()`, `getSubagentDetail()`
+- `searchSessions()`, `searchAllProjects()`, `findSessionById()`, `findSessionsByPartialId()`, `getAppVersion()`
 
 ### Repository APIs
 - `getRepositoryGroups()`, `getWorktreeSessions()`
@@ -20,8 +21,8 @@ Groups exposed methods by domain:
 ### Validation APIs
 - `validatePath()`, `validateMentions()`
 
-### CLAUDE.md APIs
-- `readClaudeMdFiles()`, `readDirectoryClaudeMd()`, `readMentionedFile()`
+### CLAUDE.md / Agent APIs
+- `readClaudeMdFiles()`, `readDirectoryClaudeMd()`, `readMentionedFile()`, `readAgentConfigs()`
 
 ### Notifications
 - `notifications.{get,markRead,markAllRead,delete,clear,getUnreadCount}`
@@ -32,14 +33,37 @@ Groups exposed methods by domain:
 - `config.{addTrigger,updateTrigger,removeTrigger,getTriggers,testTrigger}`
 - `config.{addIgnoreRegex,removeIgnoreRegex,addIgnoreRepository,removeIgnoreRepository}`
 - `config.{snooze,clearSnooze,selectFolders}`
-- `config.{openInEditor,pinSession,unpinSession}`
+- `config.{openInEditor,pinSession,unpinSession,hideSession,unhideSession,hideSessions,unhideSessions}`
+- `config.{selectClaudeRootFolder,getClaudeRootInfo,findWslClaudeRoots}` - Claude root selection
+
+### SSH API
+- `ssh.{connect,disconnect,getState,test}` - Connection lifecycle
+- `ssh.{getConfigHosts,resolveHost,saveLastConnection,getLastConnection}`
+- `ssh.onStatus()` - Connection status listener
+
+### Context API
+- `context.{list,getActive,switch}` - Local/SSH context switching
+- `context.onChanged()` - Context change listener
+
+### Memory API
+- `memory.{hasMemory,getIndex,readFile}` - Per-project memory reading
+- `memory.{listAvailableOpeners,openIn,copyPath}` - Open-in / clipboard actions
+- `memory.onChanged()` - Memory file change listener
+
+### Updater API
+- `updater.{check,download,install}`, `updater.onStatus()` (no-op stub in this fork)
+
+### HTTP Server API
+- `httpServer.{start,stop,getStatus}` - Standalone/remote sidecar control
+
+### Window Controls
+- `windowControls.{minimize,maximize,close,isMaximized,relaunch}` (Windows/Linux)
 
 ### Utilities
-- `openPath()` - Shell operations
-- `openExternal()` - Open URLs in browser
-- `onFileChange()` - File watcher events
-- `getZoomFactor()` - Get current zoom level
-- `onZoomFactorChanged()` - Zoom change listener
+- `openPath()`, `openExternal()` - Shell operations
+- `onFileChange()`, `onTodoChange()` - File/todo watcher events
+- `onSessionRefresh()` - Ctrl/Cmd+R refresh (main → renderer)
+- `getZoomFactor()`, `onZoomFactorChanged()` - Zoom sync
 - `session.scrollToLine()` - Deep link navigation
 
 ## IPC Pattern

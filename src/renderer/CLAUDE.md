@@ -6,7 +6,9 @@ React application running in Chromium.
 - `App.tsx` - Root layout
 - `main.tsx` - React entry point
 - `index.css` - Global styles with Tailwind
+- `api/` - Transport abstraction (`index.ts` Proxy dispatching to electronAPI or the HTTP client for standalone builds)
 - `components/` - UI components by feature
+- `services/` - Renderer-side services (`contextStorage.ts`)
 - `store/` - Zustand state (slices pattern)
 - `hooks/` - Custom React hooks
 - `utils/` - Renderer utilities
@@ -20,11 +22,12 @@ components/
 ├── chat/           # Chat display, message items, viewers, context panel
 ├── common/         # Shared components (badges, dropdowns, token display)
 ├── dashboard/      # Dashboard views
-├── layout/         # Layout components (headers, shells)
+├── layout/         # Layout components (headers, shells, panes, tabs)
+├── memory/         # Per-project memory viewer (MemoryView, FrontmatterCard)
 ├── notifications/  # Notification panels and badges
-├── search/         # Search UI and results
+├── search/         # Search UI and results (SearchBar, CommandPalette)
 ├── settings/       # Settings UI
-└── sidebar/        # Sidebar navigation
+└── sidebar/        # Sidebar navigation (incl. memory section)
 ```
 
 ## Types (`types/`)
@@ -52,6 +55,9 @@ components/
 - `pathUtils.ts` - Path utility functions
 - `slashCommandExtractor.ts` - Slash command extraction
 - `stringUtils.ts` - String utility functions
+- `dateGrouping.ts` - Date-based session grouping
+- `keyboardUtils.ts` - Keyboard event helpers
+- `sessionExporter.ts` - Session export (markdown/JSON)
 - `toolLinkingEngine.ts` - Tool call/result linking
 - `toolRendering/` - Tool rendering helpers
   - `toolContentChecks.ts` - Tool content validation

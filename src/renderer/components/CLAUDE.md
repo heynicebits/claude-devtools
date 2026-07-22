@@ -18,7 +18,7 @@ components/
 │   │   ├── TeammateMessageItem  # Team message cards
 │   │   ├── ThinkingItem     # Extended thinking display
 │   │   └── TextItem         # Text output display
-│   ├── viewers/             # Content viewers (JSON, code, diff)
+│   ├── viewers/             # Content viewers (code, diff, markdown, mermaid)
 │   ├── SessionContextPanel/ # Visible context tracking panel
 │   │   ├── components/      # Section wrappers (ClaudeMdFilesSection, ToolOutputsSection, UserMessagesSection, etc.)
 │   │   ├── items/           # Per-injection item renderers (ClaudeMdItem, ToolOutputItem, UserMessageItem, etc.)
@@ -40,17 +40,25 @@ components/
 │   ├── markdownComponents.tsx # Custom markdown renderers
 │   └── searchHighlightUtils.ts # Search highlight utilities
 ├── common/                  # Shared UI primitives
+│   ├── ConfirmDialog        # Confirmation modal
+│   ├── ConnectionStatusBadge # SSH/local connection status
+│   ├── ContextSwitchOverlay # Context-switch loading overlay
 │   ├── CopyButton           # Copy to clipboard button
 │   ├── CopyablePath         # Clickable, copyable file path
 │   ├── ErrorBoundary        # React error boundary
+│   ├── ExportDropdown       # Session export menu
 │   ├── OngoingIndicator     # Session in-progress indicator
 │   ├── RepositoryDropdown   # Repository selector dropdown
 │   ├── TokenUsageDisplay    # Token breakdown with context stats hover
+│   ├── UpdateBanner         # Update-available banner
+│   ├── UpdateDialog         # Update prompt dialog
+│   ├── WorkspaceIndicator   # Active workspace/context indicator
 │   └── WorktreeBadge        # Git worktree badge
 ├── dashboard/               # Overview and listing pages
-├── layout/                  # App shell, sidebars, headers
+├── layout/                  # App shell, sidebars, headers, panes, tabs
+├── memory/                  # Per-project memory viewer (MemoryView, FrontmatterCard)
 ├── notifications/           # Notification panels and badges
-├── search/                  # Search UI and results
+├── search/                  # Search UI, results, command palette
 ├── settings/                # Settings pages and controls
 │   ├── components/          # Reusable setting controls (SettingRow, SettingsToggle, etc.)
 │   ├── hooks/               # Settings-specific hooks
