@@ -19,10 +19,18 @@ import {
 import { createLogger } from '@shared/utils/logger';
 import { app, BrowserWindow, ipcMain } from 'electron';
 import { existsSync } from 'fs';
+import { totalmem } from 'os';
 import { join } from 'path';
 
 import { initializeIpcHandlers, removeIpcHandlers } from './ipc/handlers';
 import { getProjectsBasePath, getTodosBasePath } from './utils/pathDecoder';
+
+// Dynamic renderer heap limit — proportional to system RAM so low-end devices
+// are not starved.  50% of total RAM, clamped to [2 GB, 4 GB].
+// Must run before app.whenReady() so the flag is picked up by the renderer.
+const totalMB = Math.floor(totalmem() / (1024 * 1024));
+const heapMB = Math.min(4096, Math.max(2048, Math.floor(totalMB * 0.5)));
+app.commandLine.appendSwitch('js-flags', `--max-old-space-size=${heapMB}`);
 
 // Window icon path for non-mac platforms.
 const getWindowIconPath = (): string | undefined => {
@@ -61,6 +69,7 @@ process.on('uncaughtException', (error) => {
 import { HttpServer } from './services/infrastructure/HttpServer';
 import {
   configManager,
+  configManagerPromise,
   LocalFileSystemProvider,
   NotificationManager,
   ServiceContext,
@@ -134,6 +143,15 @@ function wireFileWatcherEvents(context: ServiceContext): void {
   };
   context.fileWatcher.on('todo-change', todoChangeHandler);
   todoChangeCleanup = () => context.fileWatcher.off('todo-change', todoChangeHandler);
+
+  // Forward memory-change events to renderer and HTTP SSE
+  const memoryChangeHandler = (event: unknown): void => {
+    if (mainWindow && !mainWindow.isDestroyed()) {
+      mainWindow.webContents.send('memory:changed', event);
+    }
+    httpServer?.broadcast('memory:changed', event);
+  };
+  context.fileWatcher.on('memory-change', memoryChangeHandler);
 
   logger.info(`FileWatcher events wired for context: ${context.id}`);
 }
@@ -357,6 +375,7 @@ async function startHttpServer(
         subagentResolver: activeContext.subagentResolver,
         chunkBuilder: activeContext.chunkBuilder,
         dataCache: activeContext.dataCache,
+        memoryReader: activeContext.memoryReader,
         updaterService,
         sshConnectionManager,
       },
@@ -434,6 +453,7 @@ function createWindow(): void {
       preload: join(__dirname, '../preload/index.js'),
       nodeIntegration: false,
       contextIsolation: true,
+      backgroundThrottling: false,
     },
     backgroundColor: '#1a1a1a',
     ...(useNativeTitleBar ? {} : { titleBarStyle: 'hidden' as const }),
@@ -554,9 +574,12 @@ function createWindow(): void {
 /**
  * Application ready handler.
  */
-void app.whenReady().then(() => {
+void app.whenReady().then(async () => {
   logger.info('App ready, initializing...');
   try {
+    // Wait for config to finish loading from disk before using it
+    await configManagerPromise;
+
     // Initialize services first
     initializeServices();
 

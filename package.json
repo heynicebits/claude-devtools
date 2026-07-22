@@ -21,7 +21,7 @@
     "dev": "electron-vite dev",
     "build": "electron-vite build",
     "dist": "electron-builder --mac --win --linux",
-    "dist:mac": "electron-builder --mac --publish never",
+    "dist:mac": "electron-builder --mac --arm64 --x64 --publish never",
     "dist:mac:arm64": "electron-builder --mac --arm64 --publish never",
     "dist:mac:x64": "electron-builder --mac --x64 --publish never",
     "dist:win": "electron-builder --win --publish never",
@@ -59,6 +59,7 @@
     "idb-keyval": "^6.2.2",
     "lucide-react": "^0.562.0",
     "mdast-util-to-hast": "^13.2.1",
+    "mermaid": "^11.15.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "react-markdown": "^10.1.0",
@@ -108,7 +109,7 @@
     "tsx": "^4.21.0",
     "typescript": "^5.9.3",
     "typescript-eslint": "^8.54.0",
-    "vite": "^5.4.2",
+    "vite": "^6.4.2",
     "vitest": "^3.1.4"
   },
   "build": {
@@ -136,6 +137,7 @@
         "dmg",
         "zip"
       ],
+      "artifactName": "${productName}-${version}-${arch}.${ext}",
       "hardenedRuntime": true,
       "gatekeeperAssess": false,
       "notarize": false,
@@ -150,6 +152,7 @@
       "target": [
         "nsis"
       ],
+      "artifactName": "${productName}-Setup-${version}-${arch}.${ext}",
       "icon": "resources/icons/win/icon.ico"
     },
     "linux": {
@@ -159,6 +162,7 @@
         "rpm",
         "pacman"
       ],
+      "artifactName": "${productName}-${version}-${arch}.${ext}",
       "icon": "resources/icons/png",
       "category": "Development"
     },
@@ -172,5 +176,13 @@
     },
     "publish": null
   },
-  "packageManager": "pnpm@10.25.0+sha512.5e82639027af37cf832061bcc6d639c219634488e0f2baebe785028a793de7b525ffcd3f7ff574f5e9860654e098fe852ba8ac5dd5cefe1767d23a020a92f501"
+  "packageManager": "pnpm@10.25.0+sha512.5e82639027af37cf832061bcc6d639c219634488e0f2baebe785028a793de7b525ffcd3f7ff574f5e9860654e098fe852ba8ac5dd5cefe1767d23a020a92f501",
+  "pnpm": {
+    "overrides": {
+      "lodash-es@<4.18.0": ">=4.18.0",
+      "brace-expansion@>=3.0.0 <5.0.7": ">=5.0.7",
+      "fast-uri@<3.1.4": "^3.1.4",
+      "dompurify@<3.4.12": ">=3.4.12"
+    }
+  }
 }

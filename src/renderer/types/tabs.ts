@@ -3,6 +3,8 @@
  * Based on specs/001-tabbed-layout-dashboard/contracts/tab-state.ts
  */
 
+import { generateUUID } from '@renderer/utils/stringUtils';
+
 import type { Session } from './data';
 import type { TriggerColor } from '@shared/constants/triggerColors';
 
@@ -76,12 +78,12 @@ export interface Tab {
   id: string;
 
   /** Type of content displayed in this tab */
-  type: 'session' | 'dashboard' | 'notifications' | 'settings';
+  type: 'session' | 'dashboard' | 'notifications' | 'settings' | 'memory';
 
   /** Session ID (required when type === 'session') */
   sessionId?: string;
 
-  /** Project ID (required when type === 'session') */
+  /** Project ID (required when type === 'session', or when type === 'memory') */
   projectId?: string;
 
   /** Display name for the tab (max 50 chars) */
@@ -194,7 +196,7 @@ export function createErrorNavigationRequest(
   highlightColor?: TriggerColor
 ): TabNavigationRequest {
   return {
-    id: crypto.randomUUID(),
+    id: generateUUID(),
     kind: 'error',
     source,
     highlight: highlightColor ?? 'red',
@@ -209,7 +211,7 @@ export function createSearchNavigationRequest(
   payload: SearchNavigationPayload
 ): TabNavigationRequest {
   return {
-    id: crypto.randomUUID(),
+    id: generateUUID(),
     kind: 'search',
     source: 'commandPalette',
     highlight: 'yellow',

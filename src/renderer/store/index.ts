@@ -9,6 +9,7 @@ import { createConfigSlice } from './slices/configSlice';
 import { createConnectionSlice } from './slices/connectionSlice';
 import { createContextSlice } from './slices/contextSlice';
 import { createConversationSlice } from './slices/conversationSlice';
+import { createMemorySlice } from './slices/memorySlice';
 import { createNotificationSlice } from './slices/notificationSlice';
 import { createPaneSlice } from './slices/paneSlice';
 import { createProjectSlice } from './slices/projectSlice';
@@ -45,6 +46,7 @@ export const useStore = create<AppState>()((...args) => ({
   ...createConnectionSlice(...args),
   ...createContextSlice(...args),
   ...createUpdateSlice(...args),
+  ...createMemorySlice(...args),
 }));
 
 // =============================================================================
@@ -78,11 +80,37 @@ export function initializeNotificationListeners(): () => void {
     if (pendingSessionRefreshTimers.has(key)) {
       return;
     }
+
+    // Adaptive debounce: large sessions refresh less frequently to coalesce
+    // burst file-change events and amortize React re-render cost over a wider
+    // window. Uses the TARGET session's cached totalAIGroups so a long session
+    // in another pane doesn't force the active short session to the default.
+    //
+    // The IPC handler short-circuits no-op refreshes via fingerprint matching,
+    // so frequent refreshes are cheap when nothing changed. These values are
+    // tuned for the cost of a *real* update (incremental transform + zustand
+    // setState + re-render), not for raw call frequency.
+    const state = useStore.getState();
+    const tabData = Object.values(state.tabSessionData).find(
+      (td) => td?.sessionDetail?.session?.id === sessionId
+    );
+    const aiGroupCount =
+      tabData?.conversation?.totalAIGroups ??
+      (state.conversation?.items ?? []).filter((i) => i.type === 'ai').length;
+    const debounceMs =
+      aiGroupCount > 500
+        ? 1000 // 1s ceiling for very long sessions
+        : aiGroupCount > 200
+          ? 500 // 500ms for long sessions
+          : aiGroupCount > 100
+            ? 300 // 300ms for moderate sessions
+            : SESSION_REFRESH_DEBOUNCE_MS; // 150ms default
+
     const timer = setTimeout(() => {
       pendingSessionRefreshTimers.delete(key);
-      const state = useStore.getState();
-      void state.refreshSessionInPlace(projectId, sessionId);
-    }, SESSION_REFRESH_DEBOUNCE_MS);
+      const latestState = useStore.getState();
+      void latestState.refreshSessionInPlace(projectId, sessionId);
+    }, debounceMs);
     pendingSessionRefreshTimers.set(key, timer);
   };
 
@@ -223,15 +251,13 @@ export function initializeNotificationListeners(): () => void {
       const isUnknownSessionInSidebar =
         event.sessionId == null ||
         !state.sessions.some((session) => session.id === event.sessionId);
-      const shouldRefreshForPotentialNewSession =
+      const shouldRefreshSidebar =
         isTopLevelSessionEvent &&
         matchesSelectedProject &&
-        isUnknownSessionInSidebar &&
-        (event.type === 'add' || (state.connectionMode === 'local' && event.type === 'change'));
+        (isUnknownSessionInSidebar || event.type === 'change' || event.type === 'add');
 
-      // Refresh sidebar session list only when a truly new top-level session appears.
-      // Local fs.watch can report "change" before/without "add" for newly created files.
-      if (shouldRefreshForPotentialNewSession) {
+      // Refresh sidebar session list when a new session appears or an existing session updates.
+      if (shouldRefreshSidebar) {
         if (matchesSelectedProject && selectedProjectId) {
           scheduleProjectRefresh(selectedProjectId);
         }
@@ -346,6 +372,23 @@ export function initializeNotificationListeners(): () => void {
           s.host,
           s.error
         );
+    });
+    if (typeof cleanup === 'function') {
+      cleanupFns.push(cleanup);
+    }
+  }
+
+  // Listen for memory directory changes so the sidebar re-reads MEMORY.md
+  // and any expanded entries when the user edits them externally.
+  if (api.memory?.onChanged) {
+    const cleanup = api.memory.onChanged((data) => {
+      const projectId = data?.projectId;
+      if (!projectId) return;
+      const state = useStore.getState();
+      // Only refresh if the user is actually viewing that project's memory.
+      const baseProjectId = getBaseProjectId(state.selectedProjectId);
+      if (baseProjectId !== projectId) return;
+      void state.refreshMemoryForProject(projectId);
     });
     if (typeof cleanup === 'function') {
       cleanupFns.push(cleanup);

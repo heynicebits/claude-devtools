@@ -13,6 +13,7 @@
  */
 
 import { createLogger } from '@shared/utils/logger';
+import * as path from 'path';
 
 import { HttpServer } from './services/infrastructure/HttpServer';
 import {
@@ -20,7 +21,12 @@ import {
   getTodosBasePath,
   setClaudeBasePathOverride,
 } from './utils/pathDecoder';
-import { LocalFileSystemProvider, NotificationManager, ServiceContext } from './services';
+import {
+  ConfigManager,
+  LocalFileSystemProvider,
+  NotificationManager,
+  ServiceContext,
+} from './services';
 
 import type { HttpServices } from './http';
 import type { SshConnectionManager } from './services/infrastructure/SshConnectionManager';
@@ -89,6 +95,13 @@ let httpServer: HttpServer;
 async function start(): Promise<void> {
   logger.info('Starting standalone server...');
 
+  // Load config from disk before anything else uses it.
+  // When CLAUDE_ROOT is set (e.g. Docker), config lives there rather than ~/.claude.
+  const configPath = CLAUDE_ROOT
+    ? path.join(CLAUDE_ROOT, 'claude-devtools-config.json')
+    : undefined;
+  await ConfigManager.initializeInstance(configPath);
+
   // Apply Claude root override if set
   if (CLAUDE_ROOT) {
     setClaudeBasePathOverride(CLAUDE_ROOT);
@@ -125,6 +138,9 @@ async function start(): Promise<void> {
   localContext.fileWatcher.on('todo-change', (event: unknown) => {
     httpServer.broadcast('todo-change', event);
   });
+  localContext.fileWatcher.on('memory-change', (event: unknown) => {
+    httpServer.broadcast('memory:changed', event);
+  });
 
   // Forward notification events to SSE
   notificationManager.on('notification-new', (notification: unknown) => {
@@ -144,6 +160,7 @@ async function start(): Promise<void> {
     subagentResolver: localContext.subagentResolver,
     chunkBuilder: localContext.chunkBuilder,
     dataCache: localContext.dataCache,
+    memoryReader: localContext.memoryReader,
     updaterService: updaterServiceStub,
     sshConnectionManager: sshConnectionManagerStub,
   };

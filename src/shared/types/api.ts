@@ -17,12 +17,14 @@ import type { WaterfallData } from './visualization';
 import type {
   ConversationGroup,
   FileChangeEvent,
+  FindSessionByIdResult,
+  FindSessionsByPartialIdResult,
   PaginatedSessionsResult,
   Project,
   RepositoryGroup,
   SearchSessionsResult,
   Session,
-  SessionDetail,
+  SessionDetailResponse,
   SessionMetrics,
   SessionsByIdsOptions,
   SessionsPaginationOptions,
@@ -218,8 +220,26 @@ export type SshConnectionState = 'disconnected' | 'connecting' | 'connected' | '
 
 /**
  * SSH authentication method.
+ *
+ * - `sshConfig`: Defer to the system OpenSSH client's resolution of `~/.ssh/config`
+ *   (handles IdentityFile, IdentityAgent, agent socket discovery, default keys).
+ * - `password`: Manual password fallback for hosts without keys.
+ *
+ * Legacy persisted values (`auto`, `agent`, `privateKey`) are normalized to
+ * `sshConfig` via {@link normalizeSshAuthMethod} when read from disk.
  */
-export type SshAuthMethod = 'password' | 'privateKey' | 'agent' | 'auto';
+export type SshAuthMethod = 'sshConfig' | 'password';
+
+/**
+ * Coerces persisted SSH auth method values to the current union.
+ *
+ * The previous union exposed four methods (`auto`, `agent`, `privateKey`, `password`).
+ * The first three are now folded into `sshConfig`, which delegates to the user's
+ * `~/.ssh/config` exactly the way `ssh <host>` from a terminal would.
+ */
+export function normalizeSshAuthMethod(raw: unknown): SshAuthMethod {
+  return raw === 'password' ? 'password' : 'sshConfig';
+}
 
 /**
  * SSH config host entry resolved from ~/.ssh/config.
@@ -229,11 +249,16 @@ export interface SshConfigHostEntry {
   hostName?: string;
   user?: string;
   port?: number;
-  hasIdentityFile: boolean;
+  identityFiles?: string[];
 }
 
 /**
  * SSH connection configuration sent from renderer.
+ *
+ * Identity files / agent sockets are not part of this payload — `sshConfig`
+ * mode resolves them via the system `ssh` binary. The `privateKeyPath` field
+ * is retained as an optional legacy carry-over so older persisted profiles
+ * still type-check; it is ignored at connect time.
  */
 export interface SshConnectionConfig {
   host: string;
@@ -241,6 +266,7 @@ export interface SshConnectionConfig {
   username: string;
   authMethod: SshAuthMethod;
   password?: string;
+  /** @deprecated Replaced by IdentityFile resolution via `ssh -G`. Ignored. */
   privateKeyPath?: string;
 }
 
@@ -254,6 +280,7 @@ export interface SshConnectionProfile {
   port: number;
   username: string;
   authMethod: SshAuthMethod;
+  /** @deprecated Replaced by IdentityFile resolution via `ssh -G`. Ignored. */
   privateKeyPath?: string;
 }
 
@@ -278,6 +305,7 @@ export interface SshLastConnection {
   port: number;
   username: string;
   authMethod: SshAuthMethod;
+  /** @deprecated Replaced by IdentityFile resolution via `ssh -G`. Ignored. */
   privateKeyPath?: string;
 }
 
@@ -337,7 +365,24 @@ export interface ElectronAPI {
     maxResults?: number
   ) => Promise<SearchSessionsResult>;
   searchAllProjects: (query: string, maxResults?: number) => Promise<SearchSessionsResult>;
-  getSessionDetail: (projectId: string, sessionId: string) => Promise<SessionDetail | null>;
+  findSessionById: (sessionId: string) => Promise<FindSessionByIdResult>;
+  findSessionsByPartialId: (fragment: string) => Promise<FindSessionsByPartialIdResult>;
+  /**
+   * Fetch full session detail.
+   *
+   * When `knownFingerprint` is provided and matches the current file state,
+   * returns a lightweight `{ unchanged: true, fingerprint }` sentinel instead
+   * of the full payload. This lets `refreshSessionInPlace` short-circuit
+   * no-op refreshes without paying IPC serialization cost.
+   *
+   * Initial loads (no `knownFingerprint`) always receive a full SessionDetail
+   * (or null on error/not-found), preserving backwards-compatible behavior.
+   */
+  getSessionDetail: (
+    projectId: string,
+    sessionId: string,
+    knownFingerprint?: string
+  ) => Promise<SessionDetailResponse | null>;
   getSessionMetrics: (projectId: string, sessionId: string) => Promise<SessionMetrics | null>;
   getWaterfallData: (projectId: string, sessionId: string) => Promise<WaterfallData | null>;
   getSubagentDetail: (
@@ -430,6 +475,67 @@ export interface ElectronAPI {
 
   // HTTP Server API
   httpServer: HttpServerAPI;
+
+  // Memory API — per-project Claude memory viewer
+  memory: MemoryAPI;
+}
+
+// =============================================================================
+// Memory API types
+// =============================================================================
+
+export type OpenTargetId =
+  | 'finder'
+  | 'cursor'
+  | 'vscode'
+  | 'zed'
+  | 'android-studio'
+  | 'xcode'
+  | 'ghostty'
+  | 'iterm'
+  | 'terminal'
+  | 'antigravity'
+  | 'copy-path';
+
+export interface OpenTarget {
+  id: OpenTargetId;
+  label: string;
+  iconName: string;
+  shortcutKey?: string;
+  available: boolean;
+}
+
+export interface MemoryEntry {
+  title: string;
+  file: string;
+  hook: string;
+  lineNumber: number;
+}
+
+export interface MemoryIndex {
+  rawMarkdown: string;
+  entries: MemoryEntry[];
+  orphanFiles: string[];
+}
+
+export type MemoryReadFileResult =
+  | { success: true; content: string; path: string }
+  | { success: false; error: string };
+
+export type MemoryOpenResult = { success: true } | { success: false; error: string };
+
+export interface MemoryAPI {
+  hasMemory: (projectId: string) => Promise<boolean>;
+  getIndex: (projectId: string) => Promise<MemoryIndex | null>;
+  readFile: (projectId: string, fileName: string) => Promise<MemoryReadFileResult>;
+  listAvailableOpeners: () => Promise<OpenTarget[]>;
+  openIn: (
+    projectId: string,
+    fileName: string | null,
+    targetId: OpenTargetId
+  ) => Promise<MemoryOpenResult>;
+  copyPath: (projectId: string, fileName: string | null) => Promise<MemoryOpenResult>;
+  onChanged: (callback: (event: { projectId: string }) => void) => () => void;
 }
 
 // =============================================================================
