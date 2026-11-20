@@ -48,7 +48,7 @@
     "@dnd-kit/sortable": "^10.0.0",
     "@dnd-kit/utilities": "^3.2.2",
     "@fastify/cors": "^11.2.0",
-    "@fastify/static": "^10.1.6",
+    "@fastify/static": "^10.1.12",
     "@tanstack/react-virtual": "^3.10.8",
     "date-fns": "^3.6.0",
     "fastify": "^5.12.7",
@@ -180,7 +180,8 @@
       "brace-expansion@>=2.0.0 <2.1.7": "^2.1.7",
       "brace-expansion@>=3.0.0 <5.0.12": ">=5.0.12",
       "fast-uri@<3.1.8": "^3.1.8",
-      "dompurify@<3.4.16": ">=3.4.16"
+      "dompurify@<3.4.16": ">=3.4.16",
+      "katex@<0.18.2": "^0.18.2"
     }
   }
 }
