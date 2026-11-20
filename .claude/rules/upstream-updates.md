@@ -65,7 +65,7 @@ pnpm build
 Our fork has these intentional divergences from upstream — preserve them during merges:
 - **`UpdaterService.ts`**: Gutted to a no-op stub. Do NOT restore auto-updater functionality.
 - **`package.json`**: `electron-updater` removed from dependencies. Do NOT re-add it.
-- **`package.json` `pnpm.overrides`**: security pins (lodash-es, brace-expansion, fast-uri, dompurify). Keep/refresh these; do NOT drop them.
+- **`package.json` `pnpm.overrides`**: security pins (lodash-es, brace-expansion, fast-uri, dompurify, katex). Keep/refresh these; do NOT drop them. The katex pin (`^0.18.2`, added 2026-11-20) exists only because mermaid 11 pins `^0.16`; drop it once mermaid moves to 12.
 - **`package.json` `version`**: pinned to the real version (e.g. `0.5.0`). Upstream stamps version from the git tag in CI; our fork pins it so local builds show the real version in About. Keep the pin.
 - **`src/main/index.ts`**: Update menu items removed.
 - **`AUDIT-REPORT.md`**: Our file, not in upstream.
