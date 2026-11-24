@@ -3,7 +3,7 @@
 Electron app that visualizes Claude Code session execution
 
 ## Tech Stack
-Electron 28.x, React 18.x, TypeScript 5.x, Tailwind CSS 3.x, Zustand 4.x
+Electron 40.x, React 18.x, TypeScript 5.x, Tailwind CSS 3.x, Zustand 4.x
 
 ## Commands
 Always use pnpm (not npm/yarn) for this project.
